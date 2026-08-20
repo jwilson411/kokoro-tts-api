@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 
 from app.engine import wav_looks_valid
 from app.main import app, get_engine, get_limiter
-from app.voices import DEFAULT_VOICE, MAX_TEXT_CHARS
+from app.voices import DEFAULT_VOICE, MAX_TEXT_CHARS, VOICES
 
 
 def setup_module() -> None:
@@ -34,6 +34,18 @@ def test_health_reports_stub() -> None:
     assert body["engine"] == "stub"
     assert body["default_voice"] == DEFAULT_VOICE
     assert body["voices"] > 0
+
+
+def test_health_key_contract_is_frozen() -> None:
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert set(r.json()) == {"status", "engine", "default_voice", "voices"}
+
+
+def test_voices_matches_allowlist_exactly() -> None:
+    r = client.get("/voices")
+    assert r.status_code == 200
+    assert r.json() == VOICES
 
 
 def test_voices_includes_default() -> None:

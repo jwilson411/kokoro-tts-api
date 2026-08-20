@@ -26,6 +26,8 @@ First real request downloads Kokoro-82M from Hugging Face (~400MB). Later reques
 ```bash
 curl http://127.0.0.1:8765/health
 
+curl http://127.0.0.1:8765/voices
+
 curl -X POST http://127.0.0.1:8765/tts \
   -H "Content-Type: application/json" \
   -d '{"text":"Hello from a local box.","voice":"am_michael"}' \
