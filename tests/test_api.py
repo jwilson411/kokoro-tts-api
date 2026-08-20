@@ -5,12 +5,22 @@ os.environ["KOKORO_STUB"] = "1"
 from fastapi.testclient import TestClient
 
 from app.engine import wav_looks_valid
-from app.main import app, get_engine
+from app.main import app, get_engine, get_limiter
 from app.voices import DEFAULT_VOICE, MAX_TEXT_CHARS
 
 
 def setup_module() -> None:
     get_engine.cache_clear()
+
+
+def setup_function() -> None:
+    os.environ.pop("KOKORO_RATE_LIMIT", None)
+    get_limiter.cache_clear()
+
+
+def _set_rate_limit(value: str) -> None:
+    os.environ["KOKORO_RATE_LIMIT"] = value
+    get_limiter.cache_clear()
 
 
 client = TestClient(app)
@@ -54,3 +64,32 @@ def test_empty_text_is_422() -> None:
 def test_overlong_text_is_422() -> None:
     r = client.post("/tts", json={"text": "x" * (MAX_TEXT_CHARS + 1)})
     assert r.status_code == 422
+
+
+def test_tts_succeeds_under_default_rate_limit() -> None:
+    r = client.post("/tts", json={"text": "one request is fine"})
+    assert r.status_code == 200
+
+
+def test_tts_over_rate_limit_is_429() -> None:
+    _set_rate_limit("2")
+    for _ in range(2):
+        assert client.post("/tts", json={"text": "hi"}).status_code == 200
+    r = client.post("/tts", json={"text": "hi"})
+    assert r.status_code == 429
+    assert "rate limit" in r.json()["detail"]
+    assert int(r.headers["Retry-After"]) >= 1
+
+
+def test_rate_limit_zero_disables_limit() -> None:
+    _set_rate_limit("0")
+    for _ in range(5):
+        assert client.post("/tts", json={"text": "hi"}).status_code == 200
+
+
+def test_rate_limit_does_not_affect_health_and_voices() -> None:
+    _set_rate_limit("1")
+    assert client.post("/tts", json={"text": "hi"}).status_code == 200
+    assert client.post("/tts", json={"text": "hi"}).status_code == 429
+    assert client.get("/health").status_code == 200
+    assert client.get("/voices").status_code == 200

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import math
 import os
+import threading
+import time
+from collections import deque
 from contextlib import asynccontextmanager
 from functools import lru_cache
 
@@ -21,6 +25,34 @@ DEFAULT = os.environ.get("KOKORO_VOICE", DEFAULT_VOICE)
 @lru_cache(maxsize=1)
 def get_engine() -> Engine:
     return build_engine()
+
+
+class RateLimiter:
+    """Sliding-window limiter. A limit of 0 or less disables it."""
+
+    def __init__(self, limit: int, window_seconds: float = 60.0) -> None:
+        self.limit = limit
+        self.window = window_seconds
+        self._hits: deque[float] = deque()
+        self._lock = threading.Lock()
+
+    def try_acquire(self) -> float | None:
+        """Record a hit and return None, or seconds until a slot frees up."""
+        if self.limit <= 0:
+            return None
+        now = time.monotonic()
+        with self._lock:
+            while self._hits and now - self._hits[0] >= self.window:
+                self._hits.popleft()
+            if len(self._hits) < self.limit:
+                self._hits.append(now)
+                return None
+            return self.window - (now - self._hits[0])
+
+
+@lru_cache(maxsize=1)
+def get_limiter() -> RateLimiter:
+    return RateLimiter(int(os.environ.get("KOKORO_RATE_LIMIT", "30")))
 
 
 @asynccontextmanager
@@ -69,6 +101,13 @@ def voices() -> dict[str, str]:
 
 @app.post("/tts")
 def tts(req: TTSRequest) -> Response:
+    retry_after = get_limiter().try_acquire()
+    if retry_after is not None:
+        raise HTTPException(
+            status_code=429,
+            detail="rate limit exceeded: too many /tts requests, retry later",
+            headers={"Retry-After": str(max(1, math.ceil(retry_after)))},
+        )
     if not known_voice(req.voice):
         raise HTTPException(status_code=400, detail=f"unknown voice: {req.voice}")
     try:
