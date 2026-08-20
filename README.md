@@ -59,6 +59,10 @@ docker run --rm -p 8765:8765 \
 
 There is no "save this file wherever I tell you" endpoint. A public TTS wrapper that writes caller-chosen paths is a remote write primitive.
 
+### Limits
+
+Request text is capped at 8000 characters. `POST /tts` is also rate limited to 30 requests per minute per process by default. Requests over the limit get HTTP 429 with a `Retry-After` header. Set `KOKORO_RATE_LIMIT` to change the limit; a value of 0 disables it.
+
 ## Config
 
 | Env | Default | Meaning |
@@ -66,6 +70,7 @@ There is no "save this file wherever I tell you" endpoint. A public TTS wrapper 
 | `KOKORO_HOST` | `127.0.0.1` | Bind address. Docker image sets `0.0.0.0`. |
 | `KOKORO_PORT` | `8765` | Port |
 | `KOKORO_VOICE` | `am_michael` | Default voice |
+| `KOKORO_RATE_LIMIT` | `30` | Requests per minute for `POST /tts`. 0 or negative disables the limit. Text stays capped at 8000 characters regardless. |
 | `KOKORO_STUB` | unset | `1` uses a silent stub engine. Used by CI. |
 
 ## Versions
