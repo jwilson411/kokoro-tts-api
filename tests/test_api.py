@@ -2,11 +2,10 @@ import os
 
 os.environ["KOKORO_STUB"] = "1"
 
-from fastapi.testclient import TestClient
-
 from app.engine import wav_looks_valid
 from app.main import app, get_engine, get_limiter
 from app.voices import DEFAULT_VOICE, MAX_TEXT_CHARS, VOICES
+from fastapi.testclient import TestClient
 
 
 def setup_module() -> None:
