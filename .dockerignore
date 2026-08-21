@@ -1,0 +1,26 @@
+# Keep the Docker build context small: no git, tests, caches, or venvs.
+.git
+tests/
+test_*.py
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+hf_cache/
+dist/
+build/
+*.egg-info/
+
+# Model weights are never in the build context. They are downloaded at
+# runtime into the Hugging Face cache (/root/.cache/huggingface), not
+# copied into the image.
+*.wav
+*.onnx
+*.bin
+*.pt
+*.pth
