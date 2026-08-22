@@ -77,12 +77,12 @@ Request text is capped at 8000 characters. `POST /tts` is also rate limited to 3
 
 ## Versions
 
-```
-kokoro>=0.7.4,<0.8
-misaki>=0.7.4,<0.8
-```
+| Package | Pin | Why |
+|---|---|---|
+| [kokoro](https://github.com/hexgrad/kokoro) | 0.7.x (`>=0.7.4,<0.8`) | 0.9.x depends on a misaki release that removed `EspeakWrapper.set_data_path()`. |
+| misaki | 0.7.x (`>=0.7.4,<0.8`) | Same 0.9 break. Stay on 0.7.x until that API is stable. |
 
-Kokoro 0.9.x depends on a misaki release that removed `EspeakWrapper.set_data_path()`. Stay on 0.7.x until that API is stable.
+These pins match `requirements.txt`. Do not bump past 0.7.x.
 
 ## Tests
 
