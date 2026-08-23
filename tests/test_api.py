@@ -72,6 +72,18 @@ def test_empty_text_is_422() -> None:
     assert r.status_code == 422
 
 
+def test_form_encoded_body_is_422_not_500() -> None:
+    r = client.post("/tts", data={"text": "Hello from a form post."})
+    assert r.status_code == 422
+    assert r.status_code != 500
+
+
+def test_multipart_body_is_422_not_500() -> None:
+    r = client.post("/tts", files={"text": (None, "Hello from a multipart post.")})
+    assert r.status_code == 422
+    assert r.status_code != 500
+
+
 def test_overlong_text_is_422() -> None:
     r = client.post("/tts", json={"text": "x" * (MAX_TEXT_CHARS + 1)})
     assert r.status_code == 422
