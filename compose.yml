@@ -1,0 +1,8 @@
+services:
+  kokoro:
+    build: .
+    container_name: kokoro-tts-api
+    ports:
+      - "8765:8765"
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
