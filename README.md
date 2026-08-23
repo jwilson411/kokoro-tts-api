@@ -41,6 +41,7 @@ docker build -t kokoro-tts-api .
 docker run --rm -p 8765:8765 \
   -v kokoro-hf:/root/.cache/huggingface \
   kokoro-tts-api
+docker compose up --build
 ```
 
 ## API
