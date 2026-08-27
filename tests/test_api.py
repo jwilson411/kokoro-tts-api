@@ -89,6 +89,28 @@ def test_overlong_text_is_422() -> None:
     assert r.status_code == 422
 
 
+def test_speed_below_min_is_422() -> None:
+    r = client.post("/tts", json={"text": "hi", "speed": 0.49})
+    assert r.status_code == 422
+
+
+def test_speed_above_max_is_422() -> None:
+    r = client.post("/tts", json={"text": "hi", "speed": 2.01})
+    assert r.status_code == 422
+
+
+def test_speed_min_is_ok() -> None:
+    r = client.post("/tts", json={"text": "hi", "speed": 0.5})
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("audio/wav")
+
+
+def test_speed_max_is_ok() -> None:
+    r = client.post("/tts", json={"text": "hi", "speed": 2.0})
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("audio/wav")
+
+
 def test_tts_succeeds_under_default_rate_limit() -> None:
     r = client.post("/tts", json={"text": "one request is fine"})
     assert r.status_code == 200
