@@ -78,6 +78,8 @@ Request text is capped at 8000 characters. `POST /tts` is also rate limited to 3
 | `KOKORO_RATE_LIMIT` | `30` | Requests per minute for `POST /tts`. 0 or negative disables the limit. Text stays capped at 8000 characters regardless. |
 | `KOKORO_STUB` | unset | `1` uses a silent stub engine. Used by CI. |
 
+Copy `.env.example` and export the values you want to change. `.env` is gitignored.
+
 ## Versions
 
 | Package | Pin | Why |
