@@ -52,6 +52,8 @@ docker compose up --build
 | `GET` | `/voices` | Allowlisted voices. |
 | `POST` | `/tts` | JSON body. Returns `audio/wav`. |
 
+While the process is up, FastAPI also serves the OpenAPI UI at `/docs`.
+
 `POST /tts` body:
 
 | Field | Type | Default | Limits |
