@@ -1,7 +1,7 @@
-fastapi>=0.110,<1
-uvicorn[standard]>=0.27,<1
-pydantic>=2,<3
-numpy>=1.24,<3
-soundfile>=0.12
-kokoro>=0.7.4,<0.8
+fastapi>=0.141.1,<1
+uvicorn[standard]>=0.52.4,<1
+pydantic>=2.13.5,<3
+numpy>=2.5.2,<3
+soundfile>=0.14.0
+kokoro>=0.7.16,<0.8
 misaki>=0.7.4,<0.8
